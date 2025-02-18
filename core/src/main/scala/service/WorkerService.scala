@@ -10,12 +10,7 @@ trait WorkerService[F[_]] {
 }
 
 object WorkerService {
-  class WorkerServiceImpl[F[_] : Monad](queueService: QueueService[F], servicedUserTopic: Topic[F, UserPosition])
-      extends WorkerService[F] {
-    override def getNextUser: F[Option[UserPosition]] =
-      for {
-        nextUser <- queueService.nextUser
-        _ = nextUser.fold(().pure)(servicedUserTopic.publish1)
-      } yield nextUser
+  class WorkerServiceImpl[F[_] : Monad](queueService: QueueService[F]) extends WorkerService[F] {
+    override def getNextUser: F[Option[UserPosition]] = queueService.nextUser
   }
 }

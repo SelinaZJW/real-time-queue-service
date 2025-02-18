@@ -1,28 +1,26 @@
 package service
 
-import cats.Monad
+import cats.{Applicative, Monad}
 import cats.effect.std.Queue
 import cats.syntax.all.*
 import model.{UserPosition, UserSessionId}
 import fs2.Stream
+import fs2.concurrent.Topic
 
 trait UserService[F[_]] {
   def addUserAndSubscribe(userSessionId: UserSessionId): Stream[F, Int]
 }
 
 object UserService {
-  class UserServiceImpl[F[_] : Monad](queueService: QueueService[F], userQueue: Queue[F, UserPosition])
-      extends UserService[F] {
+
+  class UserServiceImpl[F[_] : Applicative](queueService: QueueService[F]) extends UserService[F] {
+
     override def addUserAndSubscribe(userSessionId: UserSessionId): Stream[F, Int] = {
-      val userPosition = queueService.addUser(userSessionId)
-      for {
-        userPosition <- queueService.addUser(userSessionId)
-        currentPosition              = userPosition.position
-        currentPositionStreamMessage = Stream.emit(currentPosition)
-        updatedPositionStreamMessage = Stream
-          .fromQueueUnterminated(userQueue, currentPosition)
-          .map(currentPosition - _.position)
-      } yield currentPositionStreamMessage ++ updatedPositionStreamMessage
+      val userPosition = queueService.addUser(userSessionId).map(_.position)
+      // first stream message is user position not deducted by currentServedPosition
+      // updates are real position in queue
+      Stream.eval(userPosition) ++ queueService.subscribeToUpdates.evalMap(currentServedPosition =>
+        userPosition.map(_ - currentServedPosition))
     }
   }
 }
