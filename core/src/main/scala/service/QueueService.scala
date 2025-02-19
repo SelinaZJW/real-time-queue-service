@@ -21,7 +21,7 @@ object QueueService {
 
   class QueueServiceInMemoryImpl[F[_] : Monad](userQueue: Queue[F, UserPosition],
                                                positionCounter: Ref[F, Int],
-                                               servicedUserTopic: Topic[F, UserPosition]) // can be another queue?
+                                               latestServicedPositionSignal: SignallingRef[F, Int])
       extends QueueService[F] {
     override def addUser(userSessionId: UserSessionId): F[UserPosition] =
       for {
@@ -35,12 +35,11 @@ object QueueService {
       for {
         userPosition <- userQueue.tryTake
         _ <- userPosition.fold(().pure) { nextUserPosition =>
-          servicedUserTopic.publish1(nextUserPosition) *> positionCounter.update(_ - 1) // >> or *> ??
+          latestServicedPositionSignal.set(nextUserPosition.position) *> positionCounter.update(_ - 1) // >> or *> ??
         }
       } yield userPosition
 
     override def subscribeToUpdates: Stream[F, Int] =
-      // can be Stream.repeatEval(SignallingRef.get)
-      servicedUserTopic.subscribeUnbounded.map(_.position)
+      latestServicedPositionSignal.discrete
   }
 }

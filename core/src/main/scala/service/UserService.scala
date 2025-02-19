@@ -16,12 +16,10 @@ object UserService {
   class UserServiceImpl[F[_] : Applicative](queueService: QueueService[F]) extends UserService[F] {
 
     override def addUserAndSubscribe(userSessionId: UserSessionId): Stream[F, Int] = {
-      val userPosition = queueService.addUser(userSessionId).map(_.position)
-      // first stream message is longer term user position, not deducted by currentServedPosition
-      // updates are real / effective position in queue
-      Stream.eval(userPosition) ++ queueService.subscribeToUpdates.evalMap(currentServedPosition =>
-        userPosition.map(_ - currentServedPosition))
-      // need signal to terminate stream when user is served1
+      val assignedUserPosition = queueService.addUser(userSessionId).map(_.position)
+      queueService.subscribeToUpdates
+        .evalMap(currentServedPosition => assignedUserPosition.map(_ - currentServedPosition))
+        .takeWhile(_ > 0)    // terminate stream when user is served?
     }
   }
 }
