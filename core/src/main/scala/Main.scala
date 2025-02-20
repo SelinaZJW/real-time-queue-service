@@ -39,7 +39,21 @@ object Main extends IOApp.Simple {
     user1Served <- workerService.getNextUser.map(nextUser => nextUser.fold(0)(_))
     _           <- IO.sleep(2.seconds)
     user2Served <- workerService.getNextUser.map(nextUser => nextUser.fold(0)(_))
-    
+
+    // add user4 to queue, both get stream current position
+    _           <- IO.sleep(2.seconds)
+    user3Stream <- userService
+      .addUserAndSubscribe(UserSessionId("user4"))
+      .evalTap(latestPosition => IO.println(s"user4: $latestPosition"))
+      .compile
+      .toList
+      .start
+
+    // serve user3 and user4, stream terminates
+    _           <- IO.sleep(2.seconds)
+    user3Served <- workerService.getNextUser.map(nextUser => nextUser.fold(0)(_))
+    _           <- IO.sleep(2.seconds)
+    user4Served <- workerService.getNextUser.map(nextUser => nextUser.fold(0)(_))
 
   } yield ()
 
