@@ -1,6 +1,6 @@
 package service
 
-import cats.Applicative
+import cats.{Applicative, Monad}
 import cats.effect.std.Queue
 import cats.syntax.all.*
 import model.{UserPosition, UserSessionId}
@@ -14,15 +14,25 @@ trait UserService[F[_]] {
 
 object UserService {
 
-  class UserServiceImpl[F[_] : Applicative](queueService: QueueService[F]) extends UserService[F] {
+  class UserServiceImpl[F[_] : Monad](queueService: QueueService[F]) extends UserService[F] {
 
-    override def addUserAndSubscribe(userSessionId: UserSessionId): Stream[F, Int] = {
-      val assignedUserPosition = queueService.addUser(userSessionId).map(_.position)
-      queueService.subscribeToUpdates
-        .evalMap(currentServedPosition => assignedUserPosition.map(assigned => assigned - currentServedPosition))
-        .takeWhile(_ > 0) // terminate stream when user is served?
-    }
+    override def addUserAndSubscribe(userSessionId: UserSessionId): Stream[F, Int] =
+//      val assignedUserPosition = queueService.addUser(userSessionId).map(_.position)
+//      Stream.eval(assignedUserPosition).
+//      queueService.subscribeToUpdates
+//        .evalMap(currentServedPosition =>
+      //        assignedUserPosition.map(assigned => assigned - currentServedPosition))  // can't do this bc it will evaluate assignedUserPositioin everytime there's an update
+//        .takeWhile(_ > 0)
+
+      for {
+        assignedUserPosition <- Stream.eval(
+          queueService.addUser(userSessionId).map(_.position)
+        ) // only evaluate this once
+        updates <- queueService.subscribeToUpdates
+          .map(currentServedPosition => assignedUserPosition - currentServedPosition)
+          .takeWhile(_ > 0)
+      } yield updates
   }
 
-  def apply[F[_] : Applicative](queueService: QueueService[F]): UserService[F] = new UserServiceImpl(queueService)
+  def apply[F[_] : Monad](queueService: QueueService[F]): UserService[F] = new UserServiceImpl(queueService)
 }

@@ -47,7 +47,7 @@ object QueueService {
   def apply[F[_] : Concurrent]: F[QueueService[F]] =
     for {
       userQueue                    <- Queue.unbounded[F, UserPosition]
-      positionCounter              <- Ref.of[F, Int](1)
+      assignedPositionCounter      <- Ref.of[F, Int](1)
       latestServicedPositionSignal <- SignallingRef[F, Int](0)
-    } yield new QueueServiceInMemoryImpl(userQueue, positionCounter, latestServicedPositionSignal)
+    } yield new QueueServiceInMemoryImpl(userQueue, assignedPositionCounter, latestServicedPositionSignal)
 }

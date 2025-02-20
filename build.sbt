@@ -12,5 +12,10 @@ lazy val core = project
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     libraryDependencies ++=
-      Seq(Dependencies.catsCore, Dependencies.fs2Core, "org.scalameta" %% "munit" % "1.0.0" % Test)
+      Seq(
+        Dependencies.catsCore,
+        Dependencies.fs2Core,
+        Dependencies.scalatest,
+        Dependencies.scalaCheck,
+        "org.scalameta" %% "munit" % "1.0.0" % Test)
   )
