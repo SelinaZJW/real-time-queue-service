@@ -61,7 +61,7 @@ class QueueServiceSpec extends AnyWordSpec with Matchers with ScalaCheckProperty
     }
 
     ".subscribeToUpdates" should {
-      "return a stream of latest service position updates 1" in {
+      "return a stream of latest service position updates - working" in {
         new TestContext {
 
           val run = for {
@@ -69,26 +69,29 @@ class QueueServiceSpec extends AnyWordSpec with Matchers with ScalaCheckProperty
             user2Position <- queueService.addUser(UserSessionId("user2"))
 
             latestServedPositionStream = queueService.subscribeToUpdates
-              .evalTap(latestPosition => IO.println(s"latest position: $latestPosition"))
-              .compile.toList
+              .evalTap(latestPosition =>
+                IO.println(s"latest position: $latestPosition") *> latestServicedPositionList.update(
+                  _ :+ latestPosition))
+              .compile
+              .toList
             latestServedPositionFiber <- latestServedPositionStream.start
 
-            _ <- IO.sleep(2.seconds)
+            _          <- IO.sleep(2.seconds)
             serveUser1 <- queueService.nextUser
-            _ <- IO.sleep(2.seconds)
+            _          <- IO.sleep(2.seconds)
             serveUser2 <- queueService.nextUser
-            _ <- IO.sleep(2.seconds)
+            _          <- IO.sleep(2.seconds)
             serveNext  <- queueService.nextUser
-
 
             _ <- IO.sleep(2.seconds)
             _ <- latestServedPositionFiber.cancel
-            //_ <- latestServedPositionStream.map(println(_))
+            // _ <- latestServedPositionStream.map(println(_))
             _ <- IO.println("Done")
 
           } yield ()
 
           run.unsafeRunSync()
+          latestServicedPositionList.get.unsafeRunSync() should contain theSameElementsAs List(0, 1, 2)
           assignedPositionCounter.get.unsafeRunSync() shouldBe 3
           latestServicedPositionSignal.get.unsafeRunSync() shouldBe 2
         }
@@ -111,7 +114,7 @@ class QueueServiceSpec extends AnyWordSpec with Matchers with ScalaCheckProperty
           IO.sleep(2.seconds)
           val serveUser2 = queueService.nextUser.unsafeRunSync()
           IO.sleep(2.seconds)
-          val serveNext  = queueService.nextUser.unsafeRunSync()
+          val serveNext = queueService.nextUser.unsafeRunSync()
 
           // ?? why only 1
           // val latestServicedPositionStream = queueService.subscribeToUpdates.take(1).compile.toList.unsafeRunSync()
@@ -130,6 +133,7 @@ class QueueServiceSpec extends AnyWordSpec with Matchers with ScalaCheckProperty
     val userQueue                    = Queue.unbounded[IO, UserPosition].unsafeRunSync()
     val assignedPositionCounter      = Ref.of[IO, Int](1).unsafeRunSync()
     val latestServicedPositionSignal = SignallingRef[IO, Int](0).unsafeRunSync()
+    val latestServicedPositionList   = Ref[IO].of(List.empty[Int]).unsafeRunSync()
 
     val queueService =
       new QueueService.QueueServiceInMemoryImpl[IO](userQueue, assignedPositionCounter, latestServicedPositionSignal)
