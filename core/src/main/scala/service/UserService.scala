@@ -12,16 +12,17 @@ trait UserService[F[_]] {
 //  def subscribeToBroadcasts: Stream[F, BroadCastMessage]   // subscribe to broadcasts, e.g. day passes gone, all passes gone
 }
 
+// add testing for this with stubbed queueService
 object UserService {
 
   class UserServiceImpl[F[_] : Monad](queueService: QueueService[F]) extends UserService[F] {
 
     override def addUserAndSubscribe(userSessionId: UserSessionId): Stream[F, Int] =
 //      val assignedUserPosition = queueService.addUser(userSessionId).map(_.position)
-//      Stream.eval(assignedUserPosition).
+//      //Stream.eval(assignedUserPosition).
 //      queueService.subscribeToUpdates
 //        .evalMap(currentServedPosition =>
-      //        assignedUserPosition.map(assigned => assigned - currentServedPosition))  // can't do this bc it will evaluate assignedUserPositioin everytime there's an update
+//              assignedUserPosition.map(assigned => assigned - currentServedPosition))  // can't do this bc it will evaluate assignedUserPositioin everytime there's an update
 //        .takeWhile(_ > 0)
 
       for {

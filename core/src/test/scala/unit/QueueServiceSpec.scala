@@ -12,6 +12,7 @@ import service.QueueService
 
 import scala.concurrent.duration.DurationInt
 
+// refactor this with cats effect scalaTest
 class QueueServiceSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks {
   given IORuntime = IORuntime.global
 
@@ -68,10 +69,12 @@ class QueueServiceSpec extends AnyWordSpec with Matchers with ScalaCheckProperty
             user1Position <- queueService.addUser(UserSessionId("user1"))
             user2Position <- queueService.addUser(UserSessionId("user2"))
 
+            // check out kafka-topic-loader tests for running streams in the background
             latestServedPositionStream = queueService.subscribeToUpdates
               .evalTap(latestPosition =>
                 IO.println(s"latest position: $latestPosition") *> latestServicedPositionList.update(
                   _ :+ latestPosition))
+              .take(1)
               .compile
               .toList
             latestServedPositionFiber <- latestServedPositionStream.start
@@ -85,6 +88,8 @@ class QueueServiceSpec extends AnyWordSpec with Matchers with ScalaCheckProperty
 
             _ <- IO.sleep(2.seconds)
             _ <- latestServedPositionFiber.cancel
+            messages = latestServedPositionStream.unsafeRunSync()
+            _ = println(messages)
             // _ <- latestServedPositionStream.map(println(_))
             _ <- IO.println("Done")
 

@@ -42,7 +42,7 @@ object Main extends IOApp.Simple {
 
     // add user4 to queue, both get stream current position
     _           <- IO.sleep(2.seconds)
-    user3Stream <- userService
+    user4Stream <- userService
       .addUserAndSubscribe(UserSessionId("user4"))
       .evalTap(latestPosition => IO.println(s"user4: $latestPosition"))
       .compile

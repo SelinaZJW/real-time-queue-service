@@ -35,19 +35,8 @@ trait QueueService[F[_]] {
   // send updates to users
   def getCurrentPosition(userSessionId: UserSessionId): F[Option[Int]]
   // is this needed?
-}
-
-trait UserService[F[_]] {
-  def addUser(userSessionId: UserSessionId): F[Unit]
-  // browser calls this to join the queue
-  // server automatically subscribe immediately after ?? If not subscribe remove from queue?
-  def subscribeToPositionUpdates(userSessionId: UserSessionId): Stream[F, Int]
-  // browser calls this to get current position and subscribe to updates in the queue
-  def closeConnection(userSessionId: UserSessionId): F[Unit]
-  // browser calls this to leave the queue
-  // remove this user and update the positions of the users in the queue 
-  // send updated positions to users
-  // is this needed?
+  def subscribeToUpdates: Stream[F, Int]
+  // subscribe to updates for latest served position
 }
 
 // Alternative:
