@@ -19,8 +19,7 @@ trait QueueService[F[_]] {
 }
 
 object QueueService {
-
-  // add logging in observed
+  
   class QueueServiceInMemoryImpl[F[_] : Monad](userQueue: Queue[F, UserPosition],
                                                assignedPositionCounter: Ref[F, Int],
                                                latestServicedPositionSignal: SignallingRef[F, Int])
@@ -54,11 +53,17 @@ object QueueService {
         _            <- Console[F].println(s"Added $userPosition")
       } yield userPosition
 
-    override def nextUser: F[Option[UserPosition]] = delegate.nextUser
+    override def nextUser: F[Option[UserPosition]] =
+      for {
+        _                <- Console[F].println(s"Calling .nextUser")
+        nextUserPosition <- delegate.nextUser
+        _                <- Console[F].println(s"Serving $nextUserPosition")
+      } yield nextUserPosition
 
-    override def subscribeToUpdates: Stream[F, Int] = delegate.subscribeToUpdates
+    override def subscribeToUpdates: Stream[F, Int] =
+      delegate.subscribeToUpdates.evalTap(position => Console[F].println(s"Latest served position: $position"))
 
-  def apply[F[_] : Concurrent: Console]: F[QueueService[F]] =
+  def apply[F[_] : Concurrent : Console]: F[QueueService[F]] =
     for {
       userQueue                    <- Queue.unbounded[F, UserPosition]
       assignedPositionCounter      <- Ref.of[F, Int](1)
