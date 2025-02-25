@@ -15,7 +15,9 @@ lazy val core = project
       Seq(
         Dependencies.catsCore,
         Dependencies.fs2Core,
-        Dependencies.scalatest,
-        Dependencies.scalaCheck,
-        "org.scalameta" %% "munit" % "1.0.0" % Test)
+        Dependencies.scalatest                  % Test,
+        Dependencies.scalaCheck                 % Test,
+        Dependencies.catsEffectTestingScalatest % Test,
+        "org.scalameta"                        %% "munit" % "1.0.0" % Test
+      )
   )

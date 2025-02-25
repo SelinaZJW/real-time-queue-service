@@ -4,7 +4,7 @@ object Dependencies {
 
   // Versions
   lazy val catsCoreV                   = "2.12.0"
-  lazy val catsEffectTestingScalatestV = "1.5.0"
+  lazy val catsEffectTestingScalatestV = "1.6.0"
   lazy val catsEffectV                 = "3.5.4"
   lazy val fs2CoreV                    = "3.11.0"
   lazy val log4CatsSlf4jV              = "2.7.0"

@@ -19,7 +19,7 @@ trait QueueService[F[_]] {
 }
 
 object QueueService {
-  
+
   class QueueServiceInMemoryImpl[F[_] : Monad](userQueue: Queue[F, UserPosition],
                                                assignedPositionCounter: Ref[F, Int],
                                                latestServicedPositionSignal: SignallingRef[F, Int])
@@ -44,7 +44,6 @@ object QueueService {
       latestServicedPositionSignal.discrete
   }
 
-  // add println here
   def observed[F[_] : Console : Monad](delegate: QueueService[F]): QueueService[F] = new QueueService[F]:
     override def addUser(userSessionId: UserSessionId): F[UserPosition] =
       for {
