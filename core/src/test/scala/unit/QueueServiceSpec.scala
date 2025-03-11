@@ -132,10 +132,12 @@ class QueueServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers {
             _ <- IO.sleep(2.seconds)
             _ <- IO.println("Done")
 
+            servicedPositionStreamList <-latestServedPositionFiber.join.flatMap(outcome => outcome.embedError)
             latestServicedPositionList <- latestServicedPositionList.get
             latestAssignedPosition     <- assignedPositionCounter.get
             latestServicedPosition     <- latestServicedPositionSignal.get
           } yield {
+            servicedPositionStreamList shouldBe List(0, 1, 2)
             latestServicedPositionList should contain theSameElementsAs List(0, 1, 2)
             latestAssignedPosition shouldBe 3
             latestServicedPosition shouldBe 2
