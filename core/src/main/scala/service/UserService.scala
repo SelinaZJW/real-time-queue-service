@@ -20,7 +20,7 @@ object UserService {
     override def addUserAndSubscribe(userSessionId: UserSessionId): Stream[F, Int] =
       for {
         assignedUserPosition <- Stream.eval(
-          queueService.addUser(userSessionId).map(_.position)
+          queueService.addUser(userSessionId).map(_.assignedPosition)
         ) // only evaluate this once
         updates <- queueService
           .subscribeToUpdates(assignedUserPosition)

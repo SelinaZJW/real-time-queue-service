@@ -36,7 +36,7 @@ object QueueService {
       for {
         userPosition <- userQueue.tryTake
         _ <- userPosition.fold(().pure) { nextUserPosition =>
-          latestServicedPositionSignal.set(nextUserPosition.position)
+          latestServicedPositionSignal.set(nextUserPosition.assignedPosition)
         }
       } yield userPosition
 

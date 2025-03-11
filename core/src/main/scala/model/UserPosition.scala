@@ -1,3 +1,3 @@
 package model
 
-case class UserPosition(userSessionId: UserSessionId, position: Int)
+case class UserPosition(userSessionId: UserSessionId, assignedPosition: Int)
