@@ -22,9 +22,10 @@ object UserService {
         assignedUserPosition <- Stream.eval(
           queueService.addUser(userSessionId).map(_.position)
         ) // only evaluate this once
-        updates <- queueService.subscribeToUpdates
+        updates <- queueService
+          .subscribeToUpdates(assignedUserPosition)
           .map(currentServedPosition => assignedUserPosition - currentServedPosition)
-          .takeWhile(_ > 0)
+//          .takeWhile(_ > 0)
       } yield updates
   }
 

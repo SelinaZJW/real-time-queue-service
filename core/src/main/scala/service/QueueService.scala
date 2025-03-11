@@ -13,7 +13,7 @@ import model.*
 trait QueueService[F[_]] {
   def addUser(userSessionId: UserSessionId): F[UserPosition]
   def nextUser: F[Option[UserPosition]]
-  def subscribeToUpdates: Stream[F, Int] // can terminate this with an allSoldOut exception
+  def subscribeToUpdates(assignedPosition: Int): Stream[F, Int] // can terminate this with an allSoldOut exception
 //  def removeUser(userSessionId: UserSessionId): F[Unit]
 //  def getCurrentPosition(userSessionId: UserSessionId): F[Option[Int]]
 }
@@ -40,8 +40,10 @@ object QueueService {
         }
       } yield userPosition
 
-    override def subscribeToUpdates: Stream[F, Int] =
-      latestServicedPositionSignal.discrete
+    // takeWhile(_ <= assignedPosition) doesn't stop the stream until evaluates false
+    // takeThrough stops the stream but still emit the first value that's false
+    override def subscribeToUpdates(assignedPosition: Int): Stream[F, Int] =
+      latestServicedPositionSignal.discrete.takeThrough(_ < assignedPosition)   
   }
 
   def observed[F[_] : Console : Monad](delegate: QueueService[F]): QueueService[F] = new QueueService[F]:
@@ -59,8 +61,10 @@ object QueueService {
         _                <- Console[F].println(s"Serving $nextUserPosition")
       } yield nextUserPosition
 
-    override def subscribeToUpdates: Stream[F, Int] =
-      delegate.subscribeToUpdates.evalTap(position => Console[F].println(s"Latest served position: $position"))
+    override def subscribeToUpdates(assignedPosition: Int): Stream[F, Int] =
+      delegate
+        .subscribeToUpdates(assignedPosition)
+        .evalTap(position => Console[F].println(s"Latest served position: $position"))
 
   def apply[F[_] : Concurrent : Console]: F[QueueService[F]] =
     for {

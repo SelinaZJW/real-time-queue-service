@@ -1,11 +1,16 @@
 package unit
 
+import cats.effect.kernel.Resource
+import cats.syntax.all.*
 import cats.effect.{IO, Ref}
 import cats.effect.std.Queue
+import cats.effect.std.Supervisor
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.unsafe.IORuntime
 import fs2.concurrent.SignallingRef
 import model.{UserPosition, UserSessionId}
+import org.scalatest.Assertion
+import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.{AnyWordSpec, AsyncWordSpec}
@@ -46,21 +51,16 @@ class QueueServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers {
     ".addUser" should {
       "add userSessionId to the queue and update assigned position" in withTestContext {
         case TestContext(_, assignedPositionCounter, latestServicedPositionSignal, _, queueService) =>
-          val result = for {
-            user1Position <- queueService
-              .addUser(UserSessionId("user1"))
-            user2Position <- queueService
-              .addUser(UserSessionId("user2"))
+          for {
+            user1Position          <- queueService.addUser(UserSessionId("user1"))
+            user2Position          <- queueService.addUser(UserSessionId("user2"))
             latestAssignedPosition <- assignedPositionCounter.get
             latestServedPosition   <- latestServicedPositionSignal.get
-          } yield (user1Position, user2Position, latestAssignedPosition, latestServedPosition)
-
-          result.asserting {
-            case (user1Position, user2Position, latestAssignedPosition, latestServedPosition) =>
-              user1Position shouldBe UserPosition(UserSessionId("user1"), 1)
-              user2Position shouldBe UserPosition(UserSessionId("user2"), 2)
-              latestAssignedPosition shouldBe 3
-              latestServedPosition shouldBe 0
+          } yield {
+            user1Position shouldBe UserPosition(UserSessionId("user1"), 1)
+            user2Position shouldBe UserPosition(UserSessionId("user2"), 2)
+            latestAssignedPosition shouldBe 3
+            latestServedPosition shouldBe 0
           }
       }
     }
@@ -68,26 +68,22 @@ class QueueServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers {
     ".nextUser" should {
       "get next user from queue and update latest served position" in withTestContext {
         case TestContext(_, assignedPositionCounter, latestServicedPositionSignal, _, queueService) =>
-          val result = for {
+          for {
             user1Position          <- queueService.addUser(UserSessionId("user1"))
             user2Position          <- queueService.addUser(UserSessionId("user2"))
             serveUser1             <- queueService.nextUser
             latestAssignedPosition <- assignedPositionCounter.get
             latestServedPosition   <- latestServicedPositionSignal.get
-          } yield (user1Position, user2Position, serveUser1, latestAssignedPosition, latestServedPosition)
-
-          result.asserting {
-            case (user1Position, user2Position, serveUser1, latestAssignedPosition, latestServedPosition) =>
-              serveUser1 shouldBe Some(UserPosition(UserSessionId("user1"), 1))
-              latestAssignedPosition shouldBe 3
-              latestServedPosition shouldBe 1
+          } yield {
+            serveUser1 shouldBe Some(UserPosition(UserSessionId("user1"), 1))
+            latestAssignedPosition shouldBe 3
+            latestServedPosition shouldBe 1
           }
-
       }
 
       "return None when queue is empty" in withTestContext {
         case TestContext(_, assignedPositionCounter, latestServicedPositionSignal, _, queueService) =>
-          val result = for {
+          for {
             _                      <- queueService.addUser(UserSessionId("user1"))
             _                      <- queueService.addUser(UserSessionId("user2"))
             serveUser1             <- queueService.nextUser
@@ -95,89 +91,113 @@ class QueueServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers {
             serveNext              <- queueService.nextUser
             latestAssignedPosition <- assignedPositionCounter.get
             latestServedPosition   <- latestServicedPositionSignal.get
-          } yield (serveUser1, serveUser2, serveNext, latestAssignedPosition, latestServedPosition)
-
-          result.asserting {
-            case (serveUser1, serveUser2, serveNext, assignedPositionCounter, latestServicedPositionSignal) =>
-              serveUser1 shouldBe Some(UserPosition(UserSessionId("user1"), 1))
-              serveUser2 shouldBe Some(UserPosition(UserSessionId("user2"), 2))
-              serveNext shouldBe None
-              assignedPositionCounter shouldBe 3
-              latestServicedPositionSignal shouldBe 2
+          } yield {
+            serveUser1 shouldBe Some(UserPosition(UserSessionId("user1"), 1))
+            serveUser2 shouldBe Some(UserPosition(UserSessionId("user2"), 2))
+            serveNext shouldBe None
+            latestAssignedPosition shouldBe 3
+            latestServedPosition shouldBe 2
           }
       }
     }
 
-//    ".subscribeToUpdates" should {
-//      "return a stream of latest service position updates - working" in withTestContext {
-//        case TestContext(_, assignedPositionCounter, latestServicedPositionSignal, latestServicedPositionList, queueService) =>{
-//
-//          val run = for {
-//            user1Position <- queueService.addUser(UserSessionId("user1"))
-//            user2Position <- queueService.addUser(UserSessionId("user2"))
-//
-//            // check out kafka-topic-loader tests for running streams in the background
-//            latestServedPositionStream = queueService.subscribeToUpdates
-//              .evalTap(latestPosition =>
-//                IO.println(s"latest position: $latestPosition") *> latestServicedPositionList.update(
-//                  _ :+ latestPosition))
-//              .take(1)
-//              .compile
-//              .toList
-//            latestServedPositionFiber <- latestServedPositionStream.start
-//
-//            _          <- IO.sleep(2.seconds)
-//            serveUser1 <- queueService.nextUser
-//            _          <- IO.sleep(2.seconds)
-//            serveUser2 <- queueService.nextUser
-//            _          <- IO.sleep(2.seconds)
-//            serveNext  <- queueService.nextUser
-//
-//            _ <- IO.sleep(2.seconds)
-//            _ <- latestServedPositionFiber.cancel
-//            messages = latestServedPositionStream.unsafeRunSync()
-//            _        = println(messages)
-//            // _ <- latestServedPositionStream.map(println(_))
-//            _ <- IO.println("Done")
-//
-//          } yield ()
-//
-//          run.unsafeRunSync()
-//          latestServicedPositionList.get.unsafeRunSync() should contain theSameElementsAs List(0, 1, 2)
-//          assignedPositionCounter.get.unsafeRunSync() shouldBe 3
-//          latestServicedPositionSignal.get.unsafeRunSync() shouldBe 2
-//        }
-//      }
-//
-//      "return a stream of latest service position updates" in {
-//        new TestContext {
-//          val user1Position = queueService.addUser(UserSessionId("user1")).unsafeRunSync()
-//          val user2Position = queueService.addUser(UserSessionId("user2")).unsafeRunSync()
-//
-//          queueService.subscribeToUpdates
-//            .evalTap(latestPosition => IO.println(s"latest position: $latestPosition"))
-//            .compile
-//            .drain
-//            .start
-//            .unsafeRunSync()
-//
-//          IO.sleep(2.seconds)
-//          val serveUser1 = queueService.nextUser.unsafeRunSync()
-//          IO.sleep(2.seconds)
-//          val serveUser2 = queueService.nextUser.unsafeRunSync()
-//          IO.sleep(2.seconds)
-//          val serveNext = queueService.nextUser.unsafeRunSync()
-//
-//          // ?? why only 1
-//          // val latestServicedPositionStream = queueService.subscribeToUpdates.take(1).compile.toList.unsafeRunSync()
-//
-//          // println(latestServicedPositionStream)
-//          // queueService.subscribeToUpdates.take(2).compile.toList.unsafeRunSync() shouldBe List(1, 2)
-//          assignedPositionCounter.get.unsafeRunSync() shouldBe 3
-//          latestServicedPositionSignal.get.unsafeRunSync() shouldBe 2
-//        }
-//      }
-//    }
+    ".subscribeToUpdates" should {
+      "return a stream of latest service position updates" in withTestContext {
+        case TestContext(_,
+                         assignedPositionCounter,
+                         latestServicedPositionSignal,
+                         latestServicedPositionList,
+                         queueService) =>
+          for {
+            user1Position <- queueService.addUser(UserSessionId("user1"))
+            user2Position <- queueService.addUser(UserSessionId("user2"))
+
+            // check out kafka-topic-loader tests for running streams in the background
+            latestServedPositionStream = queueService
+              .subscribeToUpdates(user2Position.position)
+              .evalTap(latestPosition =>
+                IO.println(s"latest position: $latestPosition") *> latestServicedPositionList.update(
+                  _ :+ latestPosition))
+              .compile
+              .toList
+            latestServedPositionFiber <- latestServedPositionStream.start
+
+            _          <- IO.sleep(3.seconds)
+            serveUser1 <- queueService.nextUser
+            _          <- IO.sleep(3.seconds)
+            serveUser2 <- queueService.nextUser
+            _          <- IO.sleep(3.seconds)
+            serveNext  <- queueService.nextUser
+
+            _ <- IO.sleep(2.seconds)
+            _ <- IO.println("Done")
+
+            latestServicedPositionList <- latestServicedPositionList.get
+            latestAssignedPosition     <- assignedPositionCounter.get
+            latestServicedPosition     <- latestServicedPositionSignal.get
+          } yield {
+            latestServicedPositionList should contain theSameElementsAs List(0, 1, 2)
+            latestAssignedPosition shouldBe 3
+            latestServicedPosition shouldBe 2
+          }
+
+      }
+
+      "return a stream of latest service position updates - using Resource.surround" in withTestContext {
+        case TestContext(_,
+                         assignedPositionCounter,
+                         latestServicedPositionSignal,
+                         latestServicedPositionList,
+                         queueService) =>
+          // Assert on the stream compile values directly by using Resource.use to access
+          def streamResource(assignedUserPosition: Int): Resource[IO, IO[List[Int]]] = Supervisor[IO]
+            .evalMap(_.supervise {
+              queueService
+                .subscribeToUpdates(assignedUserPosition)
+                .evalTap(latestPosition =>
+                  IO.println(s"latest position: $latestPosition") *> latestServicedPositionList.update(
+                    _ :+ latestPosition))
+                //.take(3) // need to complete the stream to call .join, but now taken care of .subscribeToUpdates
+                .compile
+                .toList
+            })
+            .map(fiber => fiber.join.flatMap(outcome => outcome.embedError))
+
+          def startStreamingPositions(assignedUserPosition: Int): IO[List[Int]] = streamResource(assignedUserPosition).use {
+            positions =>
+              for {
+                _          <- IO.sleep(3.seconds)
+                serveUser1 <- queueService.nextUser
+                _          <- IO.sleep(3.seconds)
+                serveUser2 <- queueService.nextUser
+                _          <- IO.sleep(3.seconds)
+                serveNext  <- queueService.nextUser
+
+                _ <- IO.sleep(2.seconds)
+                _ <- IO.println("Done")
+                _ <- positions.map(success => println(s"Stream success: $success"))
+                positionStreamList <- positions  // better ways to access positions?
+              } yield positionStreamList
+          }
+
+          for {
+            user1Position <- queueService.addUser(UserSessionId("user1"))
+            user2Position <- queueService.addUser(UserSessionId("user2"))
+
+            servicedPositionStreamList <- startStreamingPositions(user2Position.position)
+
+            latestServicedPositionList <- latestServicedPositionList.get
+            latestAssignedPosition     <- assignedPositionCounter.get
+            latestServicedPosition     <- latestServicedPositionSignal.get
+          } yield {
+            servicedPositionStreamList shouldBe List(0, 1, 2)
+            latestServicedPositionList should contain theSameElementsAs List(0, 1, 2)
+            latestAssignedPosition shouldBe 3
+            latestServicedPosition shouldBe 2
+          }
+      }
+
+    }
 
   }
 }
