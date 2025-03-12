@@ -11,6 +11,7 @@ object Dependencies {
   lazy val pureconfigV                 = "0.17.7"
   lazy val scalatestV                  = "3.2.19"
   lazy val testcontainersV             = "0.41.5"
+  lazy val grpcV = ""
 
   // Dependencies
 
@@ -32,5 +33,9 @@ object Dependencies {
 
   // Fs2
   lazy val fs2Core = "co.fs2" %% "fs2-core" % fs2CoreV
+
+  // gRPC
+  lazy val grpcNetty = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
+  lazy val scalaPB = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 
 }

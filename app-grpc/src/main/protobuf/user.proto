@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+service RealTimeQueueUserService {
+  rpc AddUserAndSubscribe (Request) returns (stream PositionUpdate) {}
+}
+
+message Request {
+  UserSessionId userSessionId = 1;
+}
+
+message UserSessionId {
+  string id = 1;
+}
+
+message PositionUpdate {
+  int32 position = 1;
+}
