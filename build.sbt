@@ -25,6 +25,7 @@ lazy val core = project
 lazy val appGrpc = project
   .in(file("app-grpc"))
   .enablePlugins(Fs2Grpc)
+  .dependsOn(core)
   .settings(
     name := "app-grpc",
     version := "0.1.0-SNAPSHOT",
