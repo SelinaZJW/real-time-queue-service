@@ -1,11 +1,13 @@
 syntax = "proto3";
 
+import "scalapb/scalapb.proto";
+
 service RealTimeQueueUserService {
   rpc AddUserAndSubscribe (Request) returns (stream PositionUpdate) {}
 }
 
 message Request {
-  UserSessionId userSessionId = 1;
+  UserSessionId userSessionId = 1 [(scalapb.field).no_box = true];
 }
 
 message UserSessionId {

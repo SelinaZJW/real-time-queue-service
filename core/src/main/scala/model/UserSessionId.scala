@@ -1,3 +1,3 @@
 package model
 
-case class UserSessionId (value: String)
+case class UserSessionId(id: String)

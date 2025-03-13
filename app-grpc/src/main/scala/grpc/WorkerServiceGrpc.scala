@@ -8,13 +8,14 @@ import worker as proto
 import user as userProto
 
 import cats.effect.std.Console
+import io.grpc.Metadata
 
 private final class WorkerServiceGrpc[F[_] : Monad](workerService: WorkerService[F])
-    extends proto.RealTimeQueueWorkerServiceFs2Grpc[F, Unit] {
-  override def getNextUser(request: Empty, ctx: Unit): F[proto.Response] =
+    extends proto.RealTimeQueueWorkerServiceFs2Grpc[F, Metadata] {
+  override def getNextUser(request: Empty, ctx: Metadata): F[proto.Response] =
     workerService.getNextUser.map { maybeNextUser =>
       proto.Response(maybeNextUser.map(nextUser =>
-        proto.UserPosition(userProto.UserSessionId(nextUser.userSessionId.value), nextUser.assignedPosition)))
+        proto.UserPosition(userProto.UserSessionId(nextUser.userSessionId.id), nextUser.assignedPosition)))
     }
 }
 
@@ -31,6 +32,7 @@ object WorkerServiceGrpc {
         } yield response
     }
 
-  def apply[F[_] : Monad : Console](workerService: WorkerService[F]): proto.RealTimeQueueWorkerServiceFs2Grpc[F, Unit] =
+  def apply[F[_] : Monad : Console](
+      workerService: WorkerService[F]): proto.RealTimeQueueWorkerServiceFs2Grpc[F, Metadata] =
     observed(new WorkerServiceGrpc(workerService))
 }
