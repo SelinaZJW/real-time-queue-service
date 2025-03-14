@@ -21,6 +21,9 @@ object Client extends IOApp.Simple {
       _ <- IO.println("Begin program")
 
       _           <- IO.sleep(2.seconds)
+      _ <- userServiceStub.addUserAndSubscribe(Request(UserSessionId("")), Metadata()).compile.drain.start
+
+      _           <- IO.sleep(2.seconds)
       _ <- userServiceStub.addUserAndSubscribe(Request(UserSessionId("user1")), Metadata()).compile.drain.start
       _           <- IO.sleep(2.seconds)
       _ <- userServiceStub.addUserAndSubscribe(Request(UserSessionId("user2")), Metadata()).compile.drain.start
@@ -37,6 +40,9 @@ object Client extends IOApp.Simple {
       _ <- workerServiceStub.getNextUser(Empty(), Metadata())
       _ <- workerServiceStub.getNextUser(Empty(), Metadata())
       _ <- workerServiceStub.getNextUser(Empty(), Metadata())
+
+      _           <- IO.sleep(2.seconds)
+      _ <- userServiceStub.addUserAndSubscribe(Request(UserSessionId("")), Metadata()).compile.drain.start
     } yield ()
 
   override def run: IO[Unit] = managedChannelResource.flatMap { channel =>
