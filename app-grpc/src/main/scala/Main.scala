@@ -10,7 +10,7 @@ object Main extends IOApp.Simple {
   val serverServiceDefinitions = RTQServiceDefinitions.apply[IO]
 
   def runServer(services: List[ServerServiceDefinition]) = NettyServerBuilder
-    .forPort(9999)
+    .forPort(8080)
     .addServices(services.asJava)
     .resource[IO]
     .evalMap(server => IO(server.start()))

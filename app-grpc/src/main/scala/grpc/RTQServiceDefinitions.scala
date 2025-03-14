@@ -19,6 +19,6 @@ object RTQServiceDefinitions {
       userServiceGrpc   = UserServiceGrpc.apply(userService)
       workerServiceGrpc = WorkerServiceGrpc.apply(workerService)
       userServiceDefinition   <- RealTimeQueueUserServiceFs2Grpc.bindServiceResource[F](userServiceGrpc)
-      workerserviceDefinition <- RealTimeQueueWorkerServiceFs2Grpc.bindServiceResource[F](workerServiceGrpc)
-    } yield List(userServiceDefinition, workerserviceDefinition)
+      workerServiceDefinition <- RealTimeQueueWorkerServiceFs2Grpc.bindServiceResource[F](workerServiceGrpc)
+    } yield List(userServiceDefinition, workerServiceDefinition)
 }
