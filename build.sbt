@@ -1,5 +1,8 @@
 val scala3Version = "3.6.3"
 
+Global / run/fork := true
+Global / test/fork := true
+
 lazy val root = project
   .in(file("."))
   .settings(name := "real-time-queue-service")

@@ -19,7 +19,6 @@ import service.QueueService
 
 import scala.concurrent.duration.DurationInt
 
-// AsyncIOSpec works with AsyncWorkSpec but not AnyWordSpec ???
 class QueueServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers {
 
   final case class TestContext(

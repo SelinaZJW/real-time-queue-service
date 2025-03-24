@@ -26,9 +26,9 @@ object UserServiceGrpc {
     request.userSessionId.id match {
       case "" =>
         MonadThrow[F].raiseError(
-          Status.INVALID_ARGUMENT.withDescription("User session ID cannot be empty").asException())
+          Status.INVALID_ARGUMENT.withDescription("User session ID cannot be empty").asException())  // => effectful and contained in F
       // ??? benefits of this compared to:
-      // throw new IllegalArgumentException("User session ID cannot be empty")
+      // throw new IllegalArgumentException("User session ID cannot be empty") => not effectful
       case id => UserSessionId(id).pure
     }
 
