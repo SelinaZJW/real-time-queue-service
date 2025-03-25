@@ -10,7 +10,7 @@ object Dependencies {
   lazy val log4CatsSlf4jV              = "2.7.0"
   lazy val pureconfigV                 = "0.17.7"
   lazy val scalatestV                  = "3.2.19"
-  lazy val testcontainersV             = "0.41.5"
+  lazy val testcontainersV             = "0.43.0"
   lazy val grpcV = ""
 
   // Dependencies

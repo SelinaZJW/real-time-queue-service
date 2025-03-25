@@ -1,11 +1,11 @@
-import cats.effect.{IO, IOApp}
 import cats.effect.kernel.Resource
-import io.grpc.{InsecureChannelCredentials, ManagedChannel, Metadata}
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
+import cats.effect.{IO, IOApp}
+import com.google.protobuf.empty.Empty
 import fs2.grpc.syntax.all.*
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
+import io.grpc.{InsecureChannelCredentials, ManagedChannel, Metadata}
 import user.{RealTimeQueueUserServiceFs2Grpc, Request, UserSessionId}
 import worker.RealTimeQueueWorkerServiceFs2Grpc
-import com.google.protobuf.empty.Empty
 
 import scala.concurrent.duration.DurationInt
 

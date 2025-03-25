@@ -2,9 +2,9 @@ package grpc
 
 import cats.Monad
 import cats.effect.kernel.Resource
+import cats.effect.std.Console
 import cats.effect.syntax.all.*
 import cats.effect.{Async, Concurrent}
-import cats.effect.std.Console
 import io.grpc.ServerServiceDefinition
 import service.*
 import user.RealTimeQueueUserServiceFs2Grpc

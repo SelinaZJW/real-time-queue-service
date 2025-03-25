@@ -1,7 +1,7 @@
 val scala3Version = "3.6.3"
 
-Global / run/fork := true
-Global / test/fork := true
+Global / run / fork := true
+Global / test / fork := true
 
 lazy val root = project
   .in(file("."))
@@ -26,11 +26,11 @@ lazy val core = project
   )
 
 lazy val appGrpc = project
-  .in(file("app-grpc"))
+  .in(file("app-grpc/core"))
   .enablePlugins(Fs2Grpc)
   .dependsOn(core)
   .settings(
-    name := "app-grpc",
+    name := "app-grpc-core",
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     libraryDependencies ++=
@@ -39,5 +39,20 @@ lazy val appGrpc = project
         Dependencies.scalaPB,
         "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0" % "protobuf",
         "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0"
+      )
+  )
+
+lazy val appGrpcIt = project
+  .in(file("app-grpc/it"))
+  .dependsOn(appGrpc)
+  .settings(
+    name := "app-grpc-it",
+    version := "0.1.0-SNAPSHOT",
+    scalaVersion := scala3Version,
+    libraryDependencies ++=
+      Seq(
+        Dependencies.testcontainers % Test,
+        Dependencies.scalatest                  % Test,
+        Dependencies.catsEffectTestingScalatest % Test,
       )
   )

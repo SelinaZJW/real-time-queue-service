@@ -1,8 +1,8 @@
 import cats.effect.{IO, IOApp}
-import io.grpc.ServerServiceDefinition
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import fs2.grpc.syntax.all.*
 import grpc.RTQServiceDefinitions
+import io.grpc.ServerServiceDefinition
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 
 import scala.jdk.CollectionConverters.*
 

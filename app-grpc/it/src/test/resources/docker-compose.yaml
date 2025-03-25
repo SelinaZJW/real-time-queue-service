@@ -1,0 +1,3 @@
+services:
+  real-time-queue-service:
+    image: real-time-queue-service:${VERSION}

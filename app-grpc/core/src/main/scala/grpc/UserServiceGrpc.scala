@@ -1,16 +1,16 @@
 package grpc
 
-import cats.{Monad, MonadThrow}
-import cats.syntax.all.*
-import cats.effect.std.Console
-import fs2.Stream
-import grpc.UserServiceGrpc.validateRequest
-import service.UserService
-import model.UserSessionId
 import user as proto
 
 import cats.effect.Async
+import cats.effect.std.Console
+import cats.syntax.all.*
+import cats.{Monad, MonadThrow}
+import fs2.Stream
+import grpc.UserServiceGrpc.validateRequest
 import io.grpc.{Metadata, Status}
+import model.UserSessionId
+import service.UserService
 
 private final class UserServiceGrpc[F[_] : MonadThrow](userService: UserService[F])
     extends proto.RealTimeQueueUserServiceFs2Grpc[F, Metadata] {
