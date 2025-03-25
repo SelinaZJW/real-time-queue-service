@@ -18,12 +18,12 @@ import java.io.File
 class RealTimeQueueServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with TestContainerForAll {
 
   override val containerDef: DockerComposeContainer.Def = DockerComposeContainer.Def(
-    composeFiles = new File("docker-compose.yml"),
-    exposedServices = Seq(ExposedService("real-time-queue-service-grpc", 8080)))
+    composeFiles = new File("app-grpc/it/src/test/resources/docker-compose.yaml"),
+    exposedServices = Seq(ExposedService("real-time-queue-service-grpc", 8080)))  // specify contqiner internal port, maps to random host port
 
   def withTestContext[A](test: TestContext => IO[A]): IO[A] = withContainers { containers =>
     val appGrpcHost = containers.getServiceHost("app-grpc", 8080)
-    val appGrpcPort = containers.getServicePort("app-grpc", 8080)
+    val appGrpcPort = containers.getServicePort("app-grpc", 8080)   // retrieve random port assigned
 
     val resources = for {
       channel <- NettyChannelBuilder

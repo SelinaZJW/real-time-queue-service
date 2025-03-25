@@ -6,7 +6,7 @@ Global / test / fork := true
 lazy val root = project
   .in(file("."))
   .settings(name := "real-time-queue-service")
-  .aggregate(core, appGrpc)
+  .aggregate(core, appGrpc, appGrpcIt)
 
 lazy val core = project
   .in(file("core"))
@@ -27,11 +27,11 @@ lazy val core = project
 
 lazy val appGrpc = project
   .in(file("app-grpc/core"))
-  .enablePlugins(Fs2Grpc)
+  .enablePlugins(Fs2Grpc, DockerPlugin, JavaAppPackaging)
   .dependsOn(core)
   .settings(
-    name := "app-grpc-core",
-    version := "0.1.0-SNAPSHOT",
+    name := "app-grpc",
+    version := "0.1.0",
     scalaVersion := scala3Version,
     libraryDependencies ++=
       Seq(
@@ -39,7 +39,16 @@ lazy val appGrpc = project
         Dependencies.scalaPB,
         "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0" % "protobuf",
         "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0"
-      )
+      ),
+    Compile / mainClass := Some("Main"),  // specify entry point main class
+//    Compile / unmanagedSourceDirectories :=
+//      (Compile / unmanagedSourceDirectories).value.filterNot(_.getName == "Client.scala")  // ignore Client app in build if it's not in src/main/scala
+  )
+  .settings(
+    Docker / packageName := "real-time-queue-service/app-grpc", // image name
+    Docker / dockerBaseImage := "openjdk:17-jdk-slim",          // base java app image
+    Docker / dockerExposedPorts := Seq(8080),
+    dockerUpdateLatest := true // alwasy tagging image with "latest"
   )
 
 lazy val appGrpcIt = project
@@ -51,8 +60,8 @@ lazy val appGrpcIt = project
     scalaVersion := scala3Version,
     libraryDependencies ++=
       Seq(
-        Dependencies.testcontainers % Test,
+        Dependencies.testcontainers             % Test,
         Dependencies.scalatest                  % Test,
-        Dependencies.catsEffectTestingScalatest % Test,
+        Dependencies.catsEffectTestingScalatest % Test
       )
   )
