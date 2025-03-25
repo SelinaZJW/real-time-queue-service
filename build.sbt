@@ -1,5 +1,6 @@
 val scala3Version = "3.6.3"
 
+Global / onChangedBuildSource := ReloadOnSourceChanges
 Global / run / fork := true
 Global / test / fork := true
 
