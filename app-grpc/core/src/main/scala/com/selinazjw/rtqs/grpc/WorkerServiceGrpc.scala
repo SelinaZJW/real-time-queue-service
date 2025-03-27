@@ -1,4 +1,4 @@
-package grpc
+package com.selinazjw.rtqs.grpc
 
 import user as userProto
 import worker as proto
@@ -7,8 +7,8 @@ import cats.effect.std.Console
 import cats.syntax.all.*
 import cats.{Applicative, Monad}
 import com.google.protobuf.empty.Empty
+import com.selinazjw.rtqs.service.WorkerService
 import io.grpc.Metadata
-import service.WorkerService
 
 private final class WorkerServiceGrpc[F[_] : Monad](workerService: WorkerService[F])
     extends proto.RealTimeQueueWorkerServiceFs2Grpc[F, Metadata] {

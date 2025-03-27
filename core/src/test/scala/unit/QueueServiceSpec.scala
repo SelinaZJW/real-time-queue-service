@@ -7,15 +7,15 @@ import cats.effect.std.Queue
 import cats.effect.std.Supervisor
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.unsafe.IORuntime
+import com.selinazjw.rtqs.model.{UserPosition, UserSessionId}
+import com.selinazjw.rtqs.service.QueueService
 import fs2.concurrent.SignallingRef
-import model.{UserPosition, UserSessionId}
 import org.scalatest.Assertion
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.{AnyWordSpec, AsyncWordSpec}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import service.QueueService
 
 import scala.concurrent.duration.DurationInt
 

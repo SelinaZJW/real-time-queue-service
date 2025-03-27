@@ -1,6 +1,8 @@
+package com.selinazjw.rtqs
+
 import cats.effect.{IO, IOApp}
+import com.selinazjw.rtqs.grpc.RTQServiceDefinitions
 import fs2.grpc.syntax.all.*
-import grpc.RTQServiceDefinitions
 import io.grpc.ServerServiceDefinition
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 

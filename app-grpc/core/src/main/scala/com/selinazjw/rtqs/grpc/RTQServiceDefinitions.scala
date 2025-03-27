@@ -1,12 +1,12 @@
-package grpc
+package com.selinazjw.rtqs.grpc
 
 import cats.Monad
 import cats.effect.kernel.Resource
 import cats.effect.std.Console
 import cats.effect.syntax.all.*
 import cats.effect.{Async, Concurrent}
+import com.selinazjw.rtqs.service.{QueueService, UserService, WorkerService}
 import io.grpc.ServerServiceDefinition
-import service.*
 import user.RealTimeQueueUserServiceFs2Grpc
 import worker.RealTimeQueueWorkerServiceFs2Grpc
 

@@ -1,7 +1,9 @@
+package com.selinazjw.rtqs
+
 import cats.effect.{IO, IOApp, Sync}
+import com.selinazjw.rtqs.model.{UserPosition, UserSessionId}
+import com.selinazjw.rtqs.service.{QueueService, UserService, WorkerService}
 import fs2.Stream
-import model.{UserPosition, UserSessionId}
-import service.{QueueService, UserService, WorkerService}
 
 import scala.concurrent.duration.DurationInt
 

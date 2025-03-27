@@ -1,4 +1,4 @@
-package grpc
+package com.selinazjw.rtqs.grpc
 
 import user as proto
 
@@ -6,19 +6,19 @@ import cats.effect.Async
 import cats.effect.std.Console
 import cats.syntax.all.*
 import cats.{Monad, MonadThrow}
+import UserServiceGrpc.validateRequest
+import com.selinazjw.rtqs.model.UserSessionId
+import com.selinazjw.rtqs.service.UserService
 import fs2.Stream
-import grpc.UserServiceGrpc.validateRequest
 import io.grpc.{Metadata, Status}
-import model.UserSessionId
-import service.UserService
 
 private final class UserServiceGrpc[F[_] : MonadThrow](userService: UserService[F])
     extends proto.RealTimeQueueUserServiceFs2Grpc[F, Metadata] {
   override def addUserAndSubscribe(request: proto.Request, ctx: Metadata): Stream[F, proto.PositionUpdate] =
     for {
       validatedRequest <- Stream.eval(validateRequest(request))
-      position         <- userService.addUserAndSubscribe(validatedRequest)
-    } yield proto.PositionUpdate(position)
+      positionUpdate         <- userService.addUserAndSubscribe(validatedRequest)
+    } yield proto.PositionUpdate(positionUpdate.position)
 }
 
 object UserServiceGrpc {

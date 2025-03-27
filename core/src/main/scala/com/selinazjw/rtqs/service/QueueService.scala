@@ -1,14 +1,14 @@
-package service
+package com.selinazjw.rtqs.service
 
 import cats.Monad
-import cats.syntax.all.*
-import cats.effect.{Concurrent, Ref}
 import cats.effect.kernel.GenConcurrent
 import cats.effect.std.{Console, Queue}
+import cats.effect.{Concurrent, Ref}
 import cats.instances.queue
-import fs2.concurrent.{SignallingRef, Topic}
+import cats.syntax.all.*
+import com.selinazjw.rtqs.model.{UserPosition, UserSessionId}
 import fs2.Stream
-import model.*
+import fs2.concurrent.{SignallingRef, Topic}
 
 trait QueueService[F[_]] {
   def addUser(userSessionId: UserSessionId): F[UserPosition]

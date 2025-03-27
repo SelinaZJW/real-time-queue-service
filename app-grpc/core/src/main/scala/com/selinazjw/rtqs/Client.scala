@@ -1,4 +1,4 @@
-package client
+package com.selinazjw.rtqs
 
 import cats.effect.kernel.Resource
 import cats.effect.{IO, IOApp}

@@ -11,7 +11,8 @@ object Dependencies {
   lazy val pureconfigV                 = "0.17.7"
   lazy val scalatestV                  = "3.2.19"
   lazy val testcontainersV             = "0.43.0"
-  lazy val grpcV = ""
+  lazy val tapirV                      = "1.11.20"
+  lazy val sttpV = "4.0.0-RC2"
 
   // Dependencies
 
@@ -35,7 +36,13 @@ object Dependencies {
   lazy val fs2Core = "co.fs2" %% "fs2-core" % fs2CoreV
 
   // gRPC
-  lazy val grpcNetty = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
-  lazy val scalaPB = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+  lazy val grpcNetty = "io.grpc"               % "grpc-netty-shaded"    % scalapb.compiler.Version.grpcJavaVersion
+  lazy val scalaPB   = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 
+  // Tapir
+  lazy val tapir = "com.softwaremill.sttp.tapir" %% "tapir-core" % tapirV
+  lazy val tapirCirce = "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirV
+  
+  // STTP
+  lazy val sttpFs2 = "com.softwaremill.sttp.client4" %% "fs2" % sttpV
 }

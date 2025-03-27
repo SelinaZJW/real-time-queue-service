@@ -1,9 +1,9 @@
-package service
+package com.selinazjw.rtqs.service
 
 import cats.Monad
 import cats.syntax.all.*
+import com.selinazjw.rtqs.model.UserPosition
 import fs2.concurrent.Topic
-import model.UserPosition
 
 trait WorkerService[F[_]] {
   def getNextUser: F[Option[UserPosition]]

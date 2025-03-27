@@ -3,10 +3,10 @@ package unit
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.unsafe.IORuntime
-import model.*
+import com.selinazjw.rtqs.model.{UserPosition, UserSessionId}
+import com.selinazjw.rtqs.service.{QueueService, UserService}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
-import service.*
 import fs2.Stream
 
 import scala.util.Random
@@ -31,7 +31,7 @@ class UserServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers {
 
       val stream = userService.addUserAndSubscribe(UserSessionId("test-user"))
 
-      stream.compile.toList.asserting{_ shouldBe ((assignedPosition - latestServedPosition) to 0 by -1).toList}
+      stream.compile.toList.asserting{_.map(_.position) shouldBe ((assignedPosition - latestServedPosition) to 0 by -1).toList}
 
     }
   }
