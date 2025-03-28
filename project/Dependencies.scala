@@ -12,7 +12,8 @@ object Dependencies {
   lazy val scalatestV                  = "3.2.19"
   lazy val testcontainersV             = "0.43.0"
   lazy val tapirV                      = "1.11.20"
-  lazy val sttpV = "4.0.0-RC2"
+  lazy val sttpV                       = "4.0.0-RC2"
+  lazy val emberV                      = "0.23.30"
 
   // Dependencies
 
@@ -40,9 +41,9 @@ object Dependencies {
   lazy val scalaPB   = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 
   // Tapir
-  lazy val tapir = "com.softwaremill.sttp.tapir" %% "tapir-core" % tapirV
-  lazy val tapirCirce = "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirV
-  
-  // STTP
-  lazy val sttpFs2 = "com.softwaremill.sttp.client4" %% "fs2" % sttpV
+  lazy val tapir       = "com.softwaremill.sttp.tapir"   %% "tapir-core"          % tapirV
+  lazy val tapirCirce  = "com.softwaremill.sttp.tapir"   %% "tapir-json-circe"    % tapirV
+  lazy val sttpFs2     = "com.softwaremill.sttp.client4" %% "fs2"                 % sttpV
+  lazy val tapirHttp4s = "com.softwaremill.sttp.tapir"   %% "tapir-http4s-server" % tapirV
+  lazy val emberServer = "org.http4s"                    %% "http4s-ember-server" % emberV
 }

@@ -79,7 +79,9 @@ lazy val appTapir = project
       Seq(
         Dependencies.tapir,
         Dependencies.tapirCirce,
-        Dependencies.sttpFs2
+        Dependencies.sttpFs2,
+        Dependencies.tapirHttp4s,
+        Dependencies.emberServer,
       ),
   )
   .settings(
