@@ -1,4 +1,3 @@
 package com.selinazjw.rtqs.model
 
-abstract class InvalidArgument(message: String) extends Exception(message)
-
+sealed case class InvalidArgument(message: String) extends Exception(message)
