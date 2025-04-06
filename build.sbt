@@ -38,10 +38,11 @@ lazy val appGrpc = project
       Seq(
         Dependencies.grpcNetty,
         Dependencies.scalaPB,
+        Dependencies.grpcServices,
         "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0" % "protobuf",
         "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0"
       ),
-    Compile / mainClass := Some("com.selinazjw.rtqs.Main"),  // specify entry point main class
+    Compile / mainClass := Some("com.selinazjw.rtqs.Main") // specify entry point main class
 //    Compile / unmanagedSourceDirectories :=
 //      (Compile / unmanagedSourceDirectories).value.filterNot(_.getName == "Client.scala")  // ignore Client app in build if it's not in src/main/scala
   )
@@ -81,12 +82,12 @@ lazy val appTapir = project
         Dependencies.tapirCirce,
         Dependencies.sttpFs2,
         Dependencies.tapirHttp4s,
-        Dependencies.emberServer,
-      ),
+        Dependencies.emberServer
+      )
   )
   .settings(
     Docker / packageName := "real-time-queue-service/tapir-grpc", // image name
-    Docker / dockerBaseImage := "openjdk:17-jdk-slim",          // base java app image
+    Docker / dockerBaseImage := "openjdk:17-jdk-slim",            // base java app image
     Docker / dockerExposedPorts := Seq(8080),
     dockerUpdateLatest := true // alwasy tagging image with "latest"
   )

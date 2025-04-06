@@ -5,6 +5,7 @@ import com.selinazjw.rtqs.grpc.RTQServiceDefinitions
 import fs2.grpc.syntax.all.*
 import io.grpc.ServerServiceDefinition
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
+import io.grpc.protobuf.services.ProtoReflectionService
 
 import scala.jdk.CollectionConverters.*
 
@@ -13,7 +14,7 @@ object Main extends IOApp.Simple {
 
   def runServer(services: List[ServerServiceDefinition]) = NettyServerBuilder
     .forPort(8080)
-    .addServices(services.asJava)
+    .addServices((services :+ ProtoReflectionService.newInstance().bindService()).asJava)
     .resource[IO]
     .evalMap(server => IO(server.start()))
     .useForever

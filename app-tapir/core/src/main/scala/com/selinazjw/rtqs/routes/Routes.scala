@@ -22,37 +22,24 @@ import sttp.tapir.server.http4s.Http4sServerInterpreter
 
 final class Routes[F[_] : Async](userService: UserService[F], workerService: WorkerService[F]) {
 
-//  private def endpointToServer(userSessionId: UserSessionId) =
-//    userServiceTapir
-//      .addUserAndSubscribe(userSessionId)
-//      .pure
-//      .map(_.flatMap(positionUpdate =>
-//        Stream.emits(positionUpdate.asJson.noSpaces.getBytes)) // serialise PositionUpdate Stream to Byte Stream
-//        .asRight[(StatusCode, ErrorResponse)])
-//      .recoverWith {
-//        case InvalidArgument(message) =>
-//          (StatusCode(400), ErrorResponse(400, message)).asLeft[Pipe[F, String, PositionUpdate]].pure
-//      }
-
   private def endpointToServerWebsocket(
-      userSessionId: UserSessionId): Either[(StatusCode, ErrorResponse), Pipe[F, String, PositionUpdate]] =
-    userSessionId.id match {
+      userSessionId: String): Either[(StatusCode, ErrorResponse), Pipe[F, String, PositionUpdate]] =
+    userSessionId match {
       case "" =>
         (StatusCode.BadRequest, ErrorResponse(400, "User session ID cannot be empty"))
           .asLeft[Pipe[F, String, PositionUpdate]]
       case _ =>
-        ((_: Stream[F, String]) => userService.addUserAndSubscribe(userSessionId))
+        ((_: Stream[F, String]) => userService.addUserAndSubscribe(UserSessionId(userSessionId)))
           .asRight[(StatusCode, ErrorResponse)]
     }
 
   val userServiceEndpoint: Endpoint[Unit,
-                                    UserSessionId,
+                                    String,
                                     (StatusCode, ErrorResponse),
                                     Pipe[F, String, PositionUpdate],
-                                    Fs2Streams[F] & capabilities.WebSockets] = endpoint.post
-    .in("real-time-queue-service" / "user")
+                                    Fs2Streams[F] & capabilities.WebSockets] = endpoint.get   // websocket generally uses get
     .in("add-user-and-subscribe")
-    .in(jsonBody[UserSessionId])
+    .in(query[String]("userSessionId"))    // unable to send UserSessionId as request jsonBody, send userSessionId as query param
     .out(
       webSocketBody[String, CodecFormat.TextPlain, PositionUpdate, CodecFormat.Json](Fs2Streams[F])
     ) // stream entire messages ignoring input stream
@@ -64,7 +51,6 @@ final class Routes[F[_] : Async](userService: UserService[F], workerService: Wor
     userServiceEndpoint.serverLogicPure(useSessionId => endpointToServerWebsocket(useSessionId))
 
   val workerServiceEndpoint = endpoint.get
-    .in("real-time-queue-service" / "worker")
     .in("get-next-user")
     .out(jsonBody[Option[UserPosition]]) // error cases?
 

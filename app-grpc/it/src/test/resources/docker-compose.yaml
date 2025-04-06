@@ -2,5 +2,5 @@ services:
   real-time-queue-service-grpc:
     image: real-time-queue-service/app-grpc:latest
 #    ports:
-#      - '8080:8080'  # host port : container port
+#     - '8080:8080'   # host port : container port
                       # don't have to specify bc test uses client build on assigned port by .gerServicePort

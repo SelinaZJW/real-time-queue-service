@@ -38,6 +38,7 @@ object Dependencies {
 
   // gRPC
   lazy val grpcNetty = "io.grpc"               % "grpc-netty-shaded"    % scalapb.compiler.Version.grpcJavaVersion
+  lazy val grpcServices = "io.grpc"               % "grpc-services"    % scalapb.compiler.Version.grpcJavaVersion
   lazy val scalaPB   = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 
   // Tapir
