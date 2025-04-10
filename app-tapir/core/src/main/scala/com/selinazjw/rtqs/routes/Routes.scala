@@ -69,6 +69,6 @@ final class Routes[F[_] : Async](userService: UserService[F], workerService: Wor
 }
 
 object Routes {
-  def live[F[_] : Async](userService: UserService[F], workerService: WorkerService[F]): Routes[F] =
+  def apply[F[_] : Async](userService: UserService[F], workerService: WorkerService[F]): Routes[F] =
     new Routes[F](userService, workerService)
 }

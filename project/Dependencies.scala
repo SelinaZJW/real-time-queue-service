@@ -13,7 +13,7 @@ object Dependencies {
   lazy val testcontainersV             = "0.43.0"
   lazy val tapirV                      = "1.11.20"
   lazy val sttpV                       = "4.0.0-RC2"
-  lazy val emberV                      = "0.23.30"
+  lazy val http4sV                     = "0.23.30"
 
   // Dependencies
 
@@ -37,14 +37,18 @@ object Dependencies {
   lazy val fs2Core = "co.fs2" %% "fs2-core" % fs2CoreV
 
   // gRPC
-  lazy val grpcNetty = "io.grpc"               % "grpc-netty-shaded"    % scalapb.compiler.Version.grpcJavaVersion
-  lazy val grpcServices = "io.grpc"               % "grpc-services"    % scalapb.compiler.Version.grpcJavaVersion
-  lazy val scalaPB   = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+  lazy val grpcNetty    = "io.grpc"               % "grpc-netty-shaded"    % scalapb.compiler.Version.grpcJavaVersion
+  lazy val grpcServices = "io.grpc"               % "grpc-services"        % scalapb.compiler.Version.grpcJavaVersion
+  lazy val scalaPB      = "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 
   // Tapir
   lazy val tapir       = "com.softwaremill.sttp.tapir"   %% "tapir-core"          % tapirV
   lazy val tapirCirce  = "com.softwaremill.sttp.tapir"   %% "tapir-json-circe"    % tapirV
   lazy val sttpFs2     = "com.softwaremill.sttp.client4" %% "fs2"                 % sttpV
   lazy val tapirHttp4s = "com.softwaremill.sttp.tapir"   %% "tapir-http4s-server" % tapirV
-  lazy val emberServer = "org.http4s"                    %% "http4s-ember-server" % emberV
+
+  // http4s
+  lazy val emberServer = "org.http4s" %% "http4s-ember-server" % http4sV
+  lazy val emberClient = "org.http4s" %% "http4s-ember-client" % http4sV
+  lazy val http4sCirce = "org.http4s" %% "http4s-circe"        % http4sV
 }

@@ -82,7 +82,9 @@ lazy val appTapir = project
         Dependencies.tapirCirce,
         Dependencies.sttpFs2,
         Dependencies.tapirHttp4s,
-        Dependencies.emberServer
+        Dependencies.emberServer,
+        Dependencies.emberClient,
+        Dependencies.http4sCirce
       )
   )
   .settings(
