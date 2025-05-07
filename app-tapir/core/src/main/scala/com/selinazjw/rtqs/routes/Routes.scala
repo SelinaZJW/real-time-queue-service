@@ -23,15 +23,15 @@ import sttp.tapir.server.http4s.Http4sServerInterpreter
 final class Routes[F[_] : Async](userService: UserService[F], workerService: WorkerService[F]) {
 
   private def endpointToServerWebsocket(
-      userSessionId: String): Either[(StatusCode, ErrorResponse), Pipe[F, String, Option[PositionUpdate]]] =
+      userSessionId: String): Either[(StatusCode, ErrorResponse), Pipe[F, Option[String], Option[PositionUpdate]]] =
     userSessionId match {
       case "" =>
         (StatusCode.BadRequest, ErrorResponse(400, "User session ID cannot be empty"))
-          .asLeft[Pipe[F, String, Option[PositionUpdate]]]
+          .asLeft[Pipe[F, Option[String], Option[PositionUpdate]]]
       case _ =>
-        ((_: Stream[F, String]) =>
+        ((_: Stream[F, Option[String]]) =>
           userService.addUserAndSubscribe(UserSessionId(userSessionId)).map {
-            case PositionUpdate(0) => None    // emitting None does not closer frame for websocat
+            case PositionUpdate(0) => None    // emitting None does not closer frame for websocat??
             case positionUpdate    => positionUpdate.some
           })
           .asRight[(StatusCode, ErrorResponse)]
@@ -40,7 +40,7 @@ final class Routes[F[_] : Async](userService: UserService[F], workerService: Wor
   val userServiceEndpoint: Endpoint[Unit,
                                     String,
                                     (StatusCode, ErrorResponse),
-                                    Pipe[F, String, Option[PositionUpdate]],
+                                    Pipe[F, Option[String], Option[PositionUpdate]],
                                     Fs2Streams[F] & capabilities.WebSockets] =
     endpoint.get // websocket generally uses get
       .in("add-user-and-subscribe")
@@ -48,7 +48,7 @@ final class Routes[F[_] : Async](userService: UserService[F], workerService: Wor
         query[String]("userSessionId")
       ) // unable to send UserSessionId as request jsonBody, send userSessionId as query param
       .out(
-        webSocketBody[String, CodecFormat.TextPlain, Option[PositionUpdate], CodecFormat.Json](Fs2Streams[F]).decodeCloseResponses(true)
+        webSocketBody[Option[String], CodecFormat.TextPlain, Option[PositionUpdate], CodecFormat.Json](Fs2Streams[F]).decodeCloseResponses(true)
       ) // stream entire messages ignoring input stream
       // .out(streamBody(Fs2Streams[F])(Schema.derived[PositionUpdate], CodecFormat.Json()))
       // only allow stream of bytes, also can't signal end of stream

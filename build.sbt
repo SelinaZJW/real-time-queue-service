@@ -7,7 +7,7 @@ Global / test / fork := true
 lazy val root = project
   .in(file("."))
   .settings(name := "real-time-queue-service")
-  .aggregate(core, appGrpc, appGrpcIt, appTapir)
+  .aggregate(core, appGrpc, appGrpcIt, appTapir, appTapirIt)
 
 lazy val core = project
   .in(file("core"))
@@ -85,11 +85,27 @@ lazy val appTapir = project
         Dependencies.emberServer,
         Dependencies.emberClient,
         Dependencies.http4sCirce
-      )
+      ),
+    Compile / mainClass := Some("com.selinazjw.rtqs.Main") // specify entry point main class
   )
   .settings(
-    Docker / packageName := "real-time-queue-service/tapir-grpc", // image name
+    Docker / packageName := "real-time-queue-service/app-tapir", // image name
     Docker / dockerBaseImage := "openjdk:17-jdk-slim",            // base java app image
     Docker / dockerExposedPorts := Seq(8080),
-    dockerUpdateLatest := true // alwasy tagging image with "latest"
+    dockerUpdateLatest := true // always tagging image with "latest"
+  )
+
+lazy val appTapirIt = project
+  .in(file("app-tapir/it"))
+  .dependsOn(appTapir)
+  .settings(
+    name := "app-tapir-it",
+    version := "0.1.0-SNAPSHOT",
+    scalaVersion := scala3Version,
+    libraryDependencies ++=
+      Seq(
+        Dependencies.testcontainers             % Test,
+        Dependencies.scalatest                  % Test,
+        Dependencies.catsEffectTestingScalatest % Test
+      )
   )

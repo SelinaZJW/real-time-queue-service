@@ -16,7 +16,7 @@ import worker.{RealTimeQueueWorkerServiceFs2Grpc, UserPosition}
 import java.io.File
 import scala.concurrent.duration.DurationInt
 
-class RealTimeQueueServiceSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with TestContainerForEach {
+class RealTimeQueueServiceGrpcSpec extends AsyncWordSpec with AsyncIOSpec with Matchers with TestContainerForEach {
 
   override val containerDef: DockerComposeContainer.Def = DockerComposeContainer.Def(
     composeFiles = new File("app-grpc/it/src/test/resources/docker-compose.yaml"),

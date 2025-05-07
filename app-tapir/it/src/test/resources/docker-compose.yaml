@@ -1,0 +1,5 @@
+services:
+  real-time-queue-service-tapir:
+    image: real-time-queue-service/app-tapir:latest
+    ports:
+      - 8080:8080

@@ -48,25 +48,23 @@ object Client extends IOApp.Simple {
 
     for {
       user1 <- webSocketRequest("user1").start
-      _ <- IO.sleep(2.seconds)
+      _     <- IO.sleep(2.seconds)
       user2 <- webSocketRequest("user2").start
 
-      _ <- IO.sleep(2.seconds)
+      _          <- IO.sleep(2.seconds)
       serveUser1 <- httpClient.expect(workerServiceEndpoint.addSegment("get-next-user")).map(println(_))
 
-      _ <- IO.sleep(2.seconds)
+      _     <- IO.sleep(2.seconds)
       user3 <- webSocketRequest("user3").start
 
-      _ <- IO.sleep(2.seconds)
+      _          <- IO.sleep(2.seconds)
       serveUser2 <- httpClient.expect(workerServiceEndpoint.addSegment("get-next-user")).map(println(_))
-      _ <- IO.sleep(2.seconds)
+      _          <- IO.sleep(2.seconds)
       serveUser3 <- httpClient.expect(workerServiceEndpoint.addSegment("get-next-user")).map(println(_))
     } yield ()
 
-  override def run: IO[Unit] = (httpClient, webSocketClient).parTupled.use (
-    (httpClient, webSocketClient) =>
-      program(httpClient, webSocketClient).handleErrorWith { error =>
-        IO(println(s"Error: ${error.getMessage}"))
-      }
-  )
+  override def run: IO[Unit] = (httpClient, webSocketClient).parTupled.use((httpClient, webSocketClient) =>
+    program(httpClient, webSocketClient).handleErrorWith { error =>
+      IO(println(s"Error: ${error.getMessage}"))
+    })
 }
