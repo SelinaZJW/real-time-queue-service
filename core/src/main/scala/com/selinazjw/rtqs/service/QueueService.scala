@@ -24,12 +24,18 @@ object QueueService {
                                                assignedPositionCounter: Ref[F, Int],
                                                latestServicedPositionSignal: SignallingRef[F, Int])
       extends QueueService[F] {
+
+    var assignedPoistionCounterInt: Int = 10
+
+    assignedPoistionCounterInt = assignedPoistionCounterInt + 1
+
     override def addUser(userSessionId: UserSessionId): F[UserPosition] =
       for {
-        assignedPosition <- assignedPositionCounter.get
+        //assignedPosition <- assignedPositionCounter.get  // updateAndGet
+        assignedPosition <- assignedPositionCounter.updateAndGet(_ + 1)
         userPosition = UserPosition(userSessionId, assignedPosition)
         _ <- userQueue.offer(userPosition)
-        _ <- assignedPositionCounter.update(_ + 1)
+        //_ <- assignedPositionCounter.update(_ + 1)
       } yield userPosition
 
     override def nextUser: F[Option[UserPosition]] =
@@ -69,7 +75,7 @@ object QueueService {
   def apply[F[_] : Concurrent : Console]: F[QueueService[F]] =
     for {
       userQueue                    <- Queue.unbounded[F, UserPosition]
-      assignedPositionCounter      <- Ref.of[F, Int](1)
+      assignedPositionCounter      <- Ref.of[F, Int](0)
       latestServicedPositionSignal <- SignallingRef[F, Int](0)
     } yield observed(new QueueServiceInMemoryImpl(userQueue, assignedPositionCounter, latestServicedPositionSignal))
 }
