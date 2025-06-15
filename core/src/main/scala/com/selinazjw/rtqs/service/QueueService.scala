@@ -25,10 +25,6 @@ object QueueService {
                                                latestServicedPositionSignal: SignallingRef[F, Int])
       extends QueueService[F] {
 
-    var assignedPoistionCounterInt: Int = 10
-
-    assignedPoistionCounterInt = assignedPoistionCounterInt + 1
-
     override def addUser(userSessionId: UserSessionId): F[UserPosition] =
       for {
         //assignedPosition <- assignedPositionCounter.get  // updateAndGet
