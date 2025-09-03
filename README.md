@@ -16,8 +16,4 @@ See [tech post](https://selinazjw.com/blog/real-time-queue-service-tech-post) di
 - Workers dequeue
 - Users receive real-time position updates
 
-<video controls width={1200} >
-<source src="https://raw.githubusercontent.com/SelinaZJW/real-time-queue-service/main/docs/videos/demo.webm" type="video/webm" />
-</video>
-
-[demo](https://raw.githubusercontent.com/SelinaZJW/real-time-queue-service/main/docs/videos/demo.webm)
+[demo.webm](https://raw.githubusercontent.com/SelinaZJW/real-time-queue-service/main/docs/videos/demo.webm)
